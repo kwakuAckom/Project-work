@@ -1,0 +1,132 @@
+{% extends 'budget/base.html' %}
+
+{% block content %}
+<style>
+    .card-panel {
+        border-radius: 10px;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<div class="container">
+    <div class="row">
+        <br>
+        <div class="col s12 m6 l4">
+            <div class="card-panel blue white-text">
+                <h6 class="bold">Total Budget</h6>
+                <h3 class="bold">GHc{{ project.budget }}</h3>
+            </div>
+        </div>
+        <div class="col s12 m6 l4">
+            <div class="card-panel green white-text">
+                <h6 class="bold">Budget Left</h6>
+                <h3 class="bold">GHc{{ project.get_left }}</h3>
+            </div>
+        </div>
+        <div class="col s12 m6 l4">
+            <div class="card-panel amber black-text">
+                <h6 class="bold">Total Transactions</h6>
+                <h3 class="bold">GHc{{ project.get_total_expenses }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col s12 m6">
+            <h4 class="left-align">Expenses</h4>
+        </div>
+        <br>
+        <div class="col s12 m6">
+            <button class="btn waves-effect right modal-trigger" href='#expenseModal'>
+                <i class="material-icons white-text left">add_circle</i>
+                Add Expense
+            </button>
+        </div>
+    </div>
+    <table class="borderless z-depth-1">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Category</th>
+                <th>Date</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in expense_list %}
+            <tr>
+                <td>{{ expense.title }}</td>
+                <td>{{ expense.description }}</td>
+                <td>${{ expense.amount }}</td>
+                <td>{{ expense.category.name }}</td>
+                <td>{{ expense.date }}</td>
+                <td>
+                    <a onclick="deleteExpense(this)" data-id ="{{ expense.id }}">
+                        <i class="material-icons red-text right">close</i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<!-- ... previous code ... -->
+
+<div id="expenseModal" class="modal">
+    <div class="modal-content">
+        <h4>Add Expense</h4>
+        <form id="expense-form" method="POST" action="{% url 'detail' %}">
+            {% csrf_token %}
+            <div class="input-field">
+                <input id="title" type="text" name="title">
+                <label for="title">Title of expense</label>
+            </div>
+            <div class="input-field">
+                <input id="amount" type="number" name="amount">
+                <label for="amount">Amount</label>
+            </div>
+            <div class="input-field">
+                <input id="category" type="text" name="category">
+                <label for="category">Category of expense</label>
+            </div>
+            <div class="input-field">
+                <input id="date" type="date" name="date">
+                <label for="date">Date</label>
+            </div>
+            <button type="submit" class="btn waves-effect waves-light">Add Expense</button>
+        </form>
+    </div>
+</div>
+
+<!-- ... previous code ... -->
+
+<script>
+    var elem = document.querySelector('.modal')
+    var instance = M.Modal.init(elem)
+    var elem = document.querySelector('select')
+    var instance = M.FormSelect.init(elem)
+
+    function deleteExpense(e) {
+        let id = e.dataset.id
+        e.closest('li').remove()
+        fetch('', {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'id': id
+            }),
+            credentials: 'same-origin',
+        })
+    }
+
+    document.getElementById('expense-form').addEventListener('submit', function () {
+        this.reset();
+    });
+</script>
+
+<!-- ... previous code ... -->
+
+{% endblock %}
